@@ -1,7 +1,7 @@
 {
   "name": "awaitify-stream",
-  "version": "0.8.0",
-  "description": "Read or write to a stream using `while` and `await`, not event handlers.",
+  "version": "0.8.1",
+  "description": "Read or write to a stream using while and await, not event handlers.",
   "main": "lib/awaitify-stream.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

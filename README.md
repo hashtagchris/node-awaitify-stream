@@ -3,11 +3,11 @@ Read or write to a stream using `while` and `await`, not event handlers.
 
 - Read and write streams using familiar constructs, without resorting to synchronous methods for I/O.
 - Read and write long streams without runaway memory usage.
-- Perform asynchronous operations inbetween reading chunks/lines.
+- Process streams one chunk or line at a time. Await asynchronous operations inbetween.
 
 ## Requirements
 
-- Node v8+ recommended. `async`/`await` support was added in Node v7. Node v6 will throw "SyntaxError: Unexpected token function" for the examples below.
+- Node v8+ recommended. `async`/`await` support was added to Node v7. Node v6 will throw "SyntaxError: Unexpected token function" for the examples below.
 
 ## Install
 
@@ -15,13 +15,13 @@ Read or write to a stream using `while` and `await`, not event handlers.
 
 # Reader functions
 
-- readAsync([size]): Promise wrapper around [readable.read](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_readable_read_size). Returns a promise for the next chunk of data. Resolves to null at the end of the stream.
+- `readAsync([size])`: Promise wrapper around [readable.read](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_readable_read_size). Returns a promise for the next chunk of data. Resolves to null at the end of the stream.
 
 # Writer functions
 
-- writeAsync(chunk[, encoding]): Promise wrapper around [writable.write](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_writable_write_chunk_encoding_callback). Returns a promise that resolves following a `drain` event (if necessary) and a call to `write`. Doesn't wait for the chunk to be flushed.
+- `writeAsync(chunk[, encoding])`: Promise wrapper around [writable.write](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_writable_write_chunk_encoding_callback). Returns a promise that resolves following a `drain` event (if necessary) and a call to `write`. Doesn't wait for the chunk to be flushed.
 
-- endAsync([chunk][, encoding]): Promise wrapper around [writable.end](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_writable_end_chunk_encoding_callback). Returns a promise that resolves when the stream is finished.
+- `endAsync([chunk][, encoding])`: Promise wrapper around [writable.end](https://nodejs.org/dist/latest-v8.x/docs/api/stream.html#stream_writable_end_chunk_encoding_callback). Returns a promise that resolves when the stream is finished.
 
 # Reader/Writer API
 
@@ -37,11 +37,14 @@ async function run() {
     let writer = aw.createWriter(process.stdout);
 
     // Read the file and write it to stdout.
-    let chunk;
+    let chunk, count = 0;
     while (null !== (chunk = await reader.readAsync())) {
         // Perform any synchronous or asynchronous operation here.
         await writer.writeAsync(chunk);
+        count++;
     }
+
+    console.log(`\n\nDone. Read the file in ${count} chunk(s).`);
 }
 
 run();
@@ -54,7 +57,7 @@ Use `addAsyncFunctions` to add the reader and/or writer functions to a stream ob
 ```javascript
 const fs = require('fs');
 const aw = require('awaitify-stream');
-const lineLength = 6; // 5 + the newline character.
+const lineLength = 6; // 5 digits in a zip code, plus the newline character.
 
 function delay(ms) {
     return new Promise((resolve) => {
@@ -63,12 +66,12 @@ function delay(ms) {
 }
 
 async function run() {
-    let readStream = aw.addAsyncFunctions(fs.createReadStream('zipCodes.txt'));
-    readStream.setEncoding('utf8');
+    let stream = aw.addAsyncFunctions(fs.createReadStream('zipCodes.txt'));
+    stream.setEncoding('utf8');
 
-    // print zip codes, slowly.
+    // Read and print zip codes, slowly.
     let zipCode;
-    while (null !== (zipCode = await readStream.readAsync(lineLength))) {
+    while (null !== (zipCode = await stream.readAsync(lineLength))) {
         // Remove the newline character. If you didn't set the encoding
         // above, use zipCode.toString().trim()
         zipCode = zipCode.trim();
@@ -100,10 +103,10 @@ function checkGuess(rl, guess) {
 }
 
 async function run() {
-    let readStream = fs.createReadStream('millionsOfGuesses.txt');
-    readStream.setEncoding('utf8');
+    let stream = fs.createReadStream('millionsOfGuesses.txt');
+    stream.setEncoding('utf8');
 
-    let lineStream = byline.createStream(readStream, { keepEmptyLines: true });
+    let lineStream = byline.createStream(stream, { keepEmptyLines: true });
     let reader = aw.createReader(lineStream);
 
     const rl = readline.createInterface({
