@@ -1,0 +1,32 @@
+{
+  "name": "awaitify-stream",
+  "version": "0.8.0",
+  "description": "Read or write to a stream using `while` and `await`, not event handlers.",
+  "main": "lib/awaitify-stream.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hashtagchris/node-awaitify-stream.git"
+  },
+  "keywords": [
+    "async",
+    "await",
+    "stream",
+    "read",
+    "write",
+    "readAsync",
+    "writeAsync",
+    "line-by-line"
+  ],
+  "author": "hashtagchris",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hashtagchris/node-awaitify-stream/issues"
+  },
+  "homepage": "https://github.com/hashtagchris/node-awaitify-stream#readme",
+  "dependencies": {
+    "byline": "^5.0.0"
+  }
+}
