@@ -7,7 +7,7 @@ Read or write to a stream using `while` and `await`, not event handlers.
 
 ## Requirements
 
-- Node v8+ recommended. `async`/`await` support was added to Node v7. Node v6 will throw "SyntaxError: Unexpected token function" for the examples below.
+- Node v8+ recommended. `async`/`await` support was added to Node v7. Node v6 will throw "SyntaxError: Unexpected token function" for the examples below. See [secondExample_without_await.js](examples/secondExample_without_await.js) for an example of using awaitify-stream without `await`.
 
 ## Install
 
@@ -66,7 +66,7 @@ function delay(ms) {
 }
 
 async function run() {
-    let stream = aw.addAsyncFunctions(fs.createReadStream('zipCodes.txt'));
+    let stream = aw.addAsyncFunctions(fs.createReadStream('zipCodes.lftxt'));
     stream.setEncoding('utf8');
 
     // Read and print zip codes, slowly.
@@ -96,7 +96,7 @@ const readline = require('readline'); // Used for prompting the user.
 
 function checkGuess(rl, guess) {
     return new Promise((resolve) => {
-        rl.question(`Is ${guess} your card? [y/n] `, (answer) => {
+        rl.question(`Is the ${guess} your card? [y/n] `, (answer) => {
             resolve(answer.startsWith('y'));
         });
     });
@@ -106,7 +106,7 @@ async function run() {
     let stream = fs.createReadStream('millionsOfGuesses.txt');
     stream.setEncoding('utf8');
 
-    let lineStream = byline.createStream(stream, { keepEmptyLines: true });
+    let lineStream = byline.createStream(stream, { keepEmptyLines: false });
     let reader = aw.createReader(lineStream);
 
     const rl = readline.createInterface({
@@ -143,7 +143,7 @@ run();
 
 # Notes
 
-- The library has no dependencies. `byline` is required just for testing.
+- The library has no dependencies. `mocha` and `byline` are required only for testing.
 
 # Credits
 

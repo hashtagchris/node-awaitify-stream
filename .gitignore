@@ -1,3 +1,7 @@
+# This repo's test output
+*.test_output
+
+
 # Logs
 logs
 *.log
