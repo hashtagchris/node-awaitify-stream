@@ -1,11 +1,11 @@
 {
   "name": "awaitify-stream",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "description": "Read or write to a stream using while and await, not event handlers.",
-  "main": "lib/awaitify-stream.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "main": "./lib/awaitify-stream.js",
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hashtagchris/node-awaitify-stream.git"
@@ -26,7 +26,11 @@
     "url": "https://github.com/hashtagchris/node-awaitify-stream/issues"
   },
   "homepage": "https://github.com/hashtagchris/node-awaitify-stream#readme",
-  "dependencies": {
-    "byline": "^5.0.0"
+  "scripts": {
+    "test": "mocha --timeout 60000"
+  },
+  "devDependencies": {
+    "byline": "^5.0.0",
+    "mocha": "^4.0.1"
   }
 }

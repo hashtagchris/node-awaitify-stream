@@ -1,7 +1,10 @@
 const fs = require('fs');
 const aw = require('../lib/awaitify-stream.js');
 
-const testFile = 'bigFile.txt';
+// Monitor memory usage while running this test by running this in Powershell:
+// 1..1000 | % { get-process node; sleep 1; }
+
+const testFile = 'bigFile.test_output';
 const testLineCount = 1234567;
 // produce constant length lines when we're not using byline.
 const lineLength = 140;
