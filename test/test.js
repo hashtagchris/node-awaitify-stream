@@ -62,28 +62,23 @@ for (let readSlowly of [false, true]) {
             
             it('should propagate errors while reading', async function () {
                 let readStream = new stream.Readable();
-                readStream.read = function ()
-                {
+                readStream.read = function () {
                     this.emit('error', new Error('dummy'));
                     return null;
                 };
 
                 let reader = aw.createReader(readStream);
-                try
-                {
+                try {
                     await reader.readAsync();
                     assert.fail('reader should throw sync read errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
             });
 
             it('should propagate errors while waiting for read', async function () {
                 let readStream = new stream.Readable();
-                readStream.read = function ()
-                {
+                readStream.read = function () {
                     process.nextTick(() => {
                         this.emit('error', new Error('dummy'));
                     });
@@ -91,13 +86,10 @@ for (let readSlowly of [false, true]) {
                 };
 
                 let reader = aw.createReader(readStream);
-                try
-                {
+                try {
                     await reader.readAsync();
                     assert.fail('reader should throw async read errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
             });
@@ -176,28 +168,23 @@ for (let readSlowly of [false, true]) {
 
             it('should propagate errors while writing', async function () {
                 let writeStream = new stream.Writable();
-                writeStream.write = function ()
-                {
+                writeStream.write = function () {
                     this.emit('error', new Error('dummy'));
                     return null;
                 };
 
                 let writer = aw.createWriter(writeStream);
-                try
-                {
+                try {
                     await writer.writeAsync('foobar');
                     assert.fail('writer should throw sync write errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
             });
 
             it('should propagate errors while waiting for write', async function () {
                 let writeStream = new stream.Writable();
-                writeStream.write = function ()
-                {
+                writeStream.write = function () {
                     return false;
                 };
 
@@ -205,17 +192,14 @@ for (let readSlowly of [false, true]) {
                 let drainListenerCount = writeStream.listenerCount('drain');
                 let errorListenerCount = writeStream.listenerCount('error');
 
-                try
-                {
+                try {
                     await writer.writeAsync('foobar');
                     process.nextTick(() => {
                         writeStream.emit('error', new Error('dummy'));
                     });
                     await writer.writeAsync('foobar');
                     assert.fail('writer should throw async writer errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
 
@@ -225,27 +209,22 @@ for (let readSlowly of [false, true]) {
 
             it('should propagate errors while ending', async function () {
                 let writeStream = new stream.Writable();
-                writeStream.end = function ()
-                {
+                writeStream.end = function () {
                     this.emit('error', new Error('dummy'));
                 };
 
                 let writer = aw.createWriter(writeStream);
-                try
-                {
+                try {
                     await writer.endAsync();
                     assert.fail('writer should throw sync end errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
             });
 
             it('should propagate errors while waiting for end', async function () {
                 let writeStream = new stream.Writable();
-                writeStream.end = function ()
-                {
+                writeStream.end = function () {
                     process.nextTick(() => {
                         this.emit('error', new Error('dummy'));
                     });
@@ -255,13 +234,10 @@ for (let readSlowly of [false, true]) {
                 let finishListenerCount = writeStream.listenerCount('finish');
                 let errorListenerCount = writeStream.listenerCount('error');
 
-                try
-                {
+                try {
                     await writer.endAsync();
                     assert.fail('writer should throw sync end errors');
-                }
-                catch (ex)
-                {
+                } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
 
