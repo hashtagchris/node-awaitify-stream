@@ -40,6 +40,7 @@ for (let readSlowly of [false, true]) {
 
                 let readStream = fs.createReadStream(testFile);
                 let reader = aw.createReader(readStream);
+                let endListenerCount = readStream.listenerCount('end');
 
                 let chunk, chunkCount = 0;
                 while (null !== (chunk = await reader.readAsync())) {
@@ -51,6 +52,8 @@ for (let readSlowly of [false, true]) {
                 }
 
                 assert.notEqual(chunkCount, 0, 'test.js should be one chunk or more.');
+                assert.equal(readStream.listenerCount('readable'), 0);
+                assert.equal(readStream.listenerCount('end'), endListenerCount);
             });
 
             it('should read an empty file', async function() {
@@ -119,6 +122,7 @@ for (let readSlowly of [false, true]) {
                 let lines = await readConstantLines(testFile);
 
                 assert.deepEqual(lines, expectedLines);
+                assert.equal(writeStream.listenerCount('drain'), 1);
             });
 
             it('should augment streams with new functions', async function () {
