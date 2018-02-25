@@ -1,4 +1,5 @@
 const fs = require('fs');
+const stream = require('stream');
 const aw = require('../lib/awaitify-stream.js');
 const assert = require('assert');
 
@@ -40,6 +41,9 @@ for (let readSlowly of [false, true]) {
 
                 let readStream = fs.createReadStream(testFile);
                 let reader = aw.createReader(readStream);
+                let readableListenerCount = readStream.listenerCount('readable');
+                let endListenerCount = readStream.listenerCount('end');
+                let errorListenerCount = readStream.listenerCount('error');
 
                 let chunk, chunkCount = 0;
                 while (null !== (chunk = await reader.readAsync())) {
@@ -51,6 +55,43 @@ for (let readSlowly of [false, true]) {
                 }
 
                 assert.notEqual(chunkCount, 0, 'test.js should be one chunk or more.');
+                assert.equal(readStream.listenerCount('readable'), readableListenerCount);
+                assert.equal(readStream.listenerCount('end'), endListenerCount);
+                assert.equal(readStream.listenerCount('error'), errorListenerCount);
+            });
+            
+            it('should propagate errors while reading', async function () {
+                let readStream = new stream.Readable();
+                readStream.read = function () {
+                    this.emit('error', new Error('dummy'));
+                    return null;
+                };
+
+                let reader = aw.createReader(readStream);
+                try {
+                    await reader.readAsync();
+                    assert.fail('reader should throw sync read errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
+            });
+
+            it('should propagate errors while waiting for read', async function () {
+                let readStream = new stream.Readable();
+                readStream.read = function () {
+                    process.nextTick(() => {
+                        this.emit('error', new Error('dummy'));
+                    });
+                    return null;
+                };
+
+                let reader = aw.createReader(readStream);
+                try {
+                    await reader.readAsync();
+                    assert.fail('reader should throw async read errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
             });
 
             it('should read an empty file', async function() {
@@ -100,6 +141,8 @@ for (let readSlowly of [false, true]) {
 
                 let writeStream = fs.createWriteStream(testFile);
                 let writer = aw.createWriter(writeStream);
+                let drainListenerCount = writeStream.listenerCount('drain');
+                let errorListenerCount = writeStream.listenerCount('error');
 
                 for (let i = 0; i < expectedLines.length; i++) {
                     await writer.writeAsync(expectedLines[i]);
@@ -119,6 +162,87 @@ for (let readSlowly of [false, true]) {
                 let lines = await readConstantLines(testFile);
 
                 assert.deepEqual(lines, expectedLines);
+                assert.equal(writeStream.listenerCount('drain'), drainListenerCount);
+                assert.equal(writeStream.listenerCount('error'), errorListenerCount);
+            });
+
+            it('should propagate errors while writing', async function () {
+                let writeStream = new stream.Writable();
+                writeStream.write = function () {
+                    this.emit('error', new Error('dummy'));
+                    return null;
+                };
+
+                let writer = aw.createWriter(writeStream);
+                try {
+                    await writer.writeAsync('foobar');
+                    assert.fail('writer should throw sync write errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
+            });
+
+            it('should propagate errors while waiting for write', async function () {
+                let writeStream = new stream.Writable();
+                writeStream.write = function () {
+                    return false;
+                };
+
+                let writer = aw.createWriter(writeStream);
+                let drainListenerCount = writeStream.listenerCount('drain');
+                let errorListenerCount = writeStream.listenerCount('error');
+
+                try {
+                    await writer.writeAsync('foobar');
+                    process.nextTick(() => {
+                        writeStream.emit('error', new Error('dummy'));
+                    });
+                    await writer.writeAsync('foobar');
+                    assert.fail('writer should throw async writer errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
+
+                assert.equal(writeStream.listenerCount('drain'), drainListenerCount);
+                assert.equal(writeStream.listenerCount('error'), errorListenerCount);
+            });
+
+            it('should propagate errors while ending', async function () {
+                let writeStream = new stream.Writable();
+                writeStream.end = function () {
+                    this.emit('error', new Error('dummy'));
+                };
+
+                let writer = aw.createWriter(writeStream);
+                try {
+                    await writer.endAsync();
+                    assert.fail('writer should throw sync end errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
+            });
+
+            it('should propagate errors while waiting for end', async function () {
+                let writeStream = new stream.Writable();
+                writeStream.end = function () {
+                    process.nextTick(() => {
+                        this.emit('error', new Error('dummy'));
+                    });
+                };
+
+                let writer = aw.createWriter(writeStream);
+                let finishListenerCount = writeStream.listenerCount('finish');
+                let errorListenerCount = writeStream.listenerCount('error');
+
+                try {
+                    await writer.endAsync();
+                    assert.fail('writer should throw sync end errors');
+                } catch (ex) {
+                    assert.equal(ex.message, 'dummy');
+                }
+
+                assert.equal(writeStream.listenerCount('finish'), finishListenerCount);
+                assert.equal(writeStream.listenerCount('error'), errorListenerCount);
             });
 
             it('should augment streams with new functions', async function () {
