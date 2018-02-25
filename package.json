@@ -1,6 +1,6 @@
 {
   "name": "awaitify-stream",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Read or write to a stream using while and await, not event handlers.",
   "main": "./lib/awaitify-stream.js",
   "files": [
