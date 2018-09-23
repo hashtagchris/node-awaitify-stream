@@ -1,5 +1,6 @@
 const fs = require('fs');
 const stream = require('stream');
+const JSONStream = require('json-stream');
 const aw = require('../lib/awaitify-stream.js');
 const assert = require('assert');
 
@@ -59,7 +60,7 @@ for (let readSlowly of [false, true]) {
                 assert.equal(readStream.listenerCount('end'), endListenerCount);
                 assert.equal(readStream.listenerCount('error'), errorListenerCount);
             });
-            
+
             it('should propagate errors while reading', async function () {
                 let readStream = new stream.Readable();
                 readStream.read = function () {
@@ -92,6 +93,48 @@ for (let readSlowly of [false, true]) {
                 } catch (ex) {
                     assert.equal(ex.message, 'dummy');
                 }
+            });
+
+            it('should throw a given error only once', async function () {
+                let readStream = JSONStream();
+
+                let chunkCount = 0, errorCount = 0;
+                let reader = aw.createReader(readStream);
+
+                async function read() {
+                    let chunk, done;
+                    do {
+                        try {
+                            chunk = await reader.readAsync();
+                            if (chunk == null) {
+                                done = true;
+                            } else {
+                                chunkCount++;
+                            }
+                        } catch (ex) {
+                            errorCount++;
+                            assert.equal(errorCount, 1);
+                            assert.equal(ex.message, 'dummy');
+                        }
+
+                        if (readSlowly) {
+                            await delay(100);
+                        }
+                    } while (!done);
+                }
+
+                const readPromise = read();
+
+                readStream.write('1\n');
+                readStream.emit('error', new Error('dummy'));
+                readStream.write('2\n');
+                readStream.write('3\n');
+                readStream.end();
+
+                await readPromise;
+
+                assert.equal(errorCount, 1, "One error should be caught.");
+                assert.equal(chunkCount, 3, "Three chunks should be read.");
             });
 
             it('should read an empty file', async function() {

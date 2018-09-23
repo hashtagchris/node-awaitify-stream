@@ -150,3 +150,5 @@ run();
 [byline](https://github.com/jahewson/node-byline) served as an example package as I was writing `awaitify-stream`, my first package.
 
 [davedoesdev](https://github.com/davedoesdev) contributed fixes.
+
+[mknj](https://github.com/mknj) identified an issue with error handling.
