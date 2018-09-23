@@ -1,4 +1,4 @@
-# node-awaitify-stream
+# node-awaitify-stream [![Build Status](https://dev.azure.com/hashtagchris/public1/_apis/build/status/hashtagchris.node-awaitify-stream)](https://dev.azure.com/hashtagchris/public1/_build/latest?definitionId=2) [![npm version](https://badge.fury.io/js/awaitify-stream.svg)](https://badge.fury.io/js/awaitify-stream)
 Read or write to a stream using `while` and `await`, not event handlers.
 
 - Read and write streams using familiar constructs, without resorting to synchronous methods for I/O.
